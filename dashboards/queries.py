@@ -1,64 +1,81 @@
-from django.db import connection
+# dashboards/queries.py
+from __future__ import annotations
 
-THRESHOLD_DAYS = 7
+from datetime import timedelta
+from django.utils import timezone
+from students.models import Student
 
 
-def fetch_dashboard_rows(limit=200, status=None):
+ACTIVE_DAYS = 7
+AT_RISK_DAYS = 30
+
+
+def _status_for_student(s: Student) -> tuple[str, int]:
     """
-    Raw SQL for SQLite (dev). Uses Django-style %s placeholders (important).
-    status can be: None / "ACTIVE" / "AT_RISK"
+    Returns (status, inactivity_days)
+    status: active / at_risk / inactive
     """
-    sql = """
-    SELECT *
-    FROM (
-        SELECT
-          id, student_uid, full_name, class_grade, last_login_at,
-          CASE
-            WHEN last_login_at IS NULL THEN 9999
-            ELSE CAST((julianday('now') - julianday(last_login_at)) AS INTEGER)
-          END AS inactivity_days,
-          CASE
-            WHEN last_login_at IS NULL THEN 'AT_RISK'
-            WHEN (julianday('now') - julianday(last_login_at)) > %s THEN 'AT_RISK'
-            ELSE 'ACTIVE'
-          END AS engagement_status
-        FROM students_student
-    ) t
-    """
+    if not s.last_login_at:
+        return ("inactive", 9999)
 
-    params = [THRESHOLD_DAYS]
-
-    if status in ("ACTIVE", "AT_RISK"):
-        sql += " WHERE engagement_status = %s "
-        params.append(status)
-
-    sql += " ORDER BY inactivity_days DESC, full_name ASC LIMIT %s; "
-    params.append(limit)
-
-    with connection.cursor() as cursor:
-        cursor.execute(sql, params)
-        cols = [c[0] for c in cursor.description]
-        return [dict(zip(cols, row)) for row in cursor.fetchall()]
+    days = (timezone.now() - s.last_login_at).days
+    if days <= ACTIVE_DAYS:
+        return ("active", days)
+    if days <= AT_RISK_DAYS:
+        return ("at_risk", days)
+    return ("inactive", days)
 
 
-def fetch_dashboard_counts():
-    sql_total = "SELECT COUNT(*) FROM students_student;"
-    sql_at_risk = """
-    SELECT COUNT(*)
-    FROM students_student
-    WHERE last_login_at IS NULL
-       OR (julianday('now') - julianday(last_login_at)) > %s;
-    """
+def fetch_dashboard_counts() -> dict:
+    qs = Student.objects.all().only("id", "last_login_at")
 
-    with connection.cursor() as cursor:
-        cursor.execute(sql_total)
-        total = cursor.fetchone()[0]
+    total = qs.count()
+    active = 0
+    at_risk = 0
+    inactive = 0
 
-        cursor.execute(sql_at_risk, [THRESHOLD_DAYS])
-        at_risk = cursor.fetchone()[0]
+    for s in qs:
+        status, _days = _status_for_student(s)
+        if status == "active":
+            active += 1
+        elif status == "at_risk":
+            at_risk += 1
+        else:
+            inactive += 1
 
     return {
         "total": total,
+        "active": active,
         "at_risk": at_risk,
-        "active": total - at_risk,
+        "inactive": inactive,
     }
+
+
+def fetch_dashboard_rows(limit: int = 200, status: str | None = None) -> list[dict]:
+    qs = (
+        Student.objects
+        .all()
+        .only("id", "student_uid", "full_name", "class_grade", "last_login_at")
+        .order_by("-created_at")
+    )
+
+    rows = []
+    for s in qs[: max(limit, 1) * 5]:  # little extra so filtering still returns enough
+        st, days = _status_for_student(s)
+        if status and st != status:
+            continue
+
+        rows.append({
+            "id": s.id,
+            "student_uid": s.student_uid,
+            "full_name": s.full_name,
+            "class_grade": s.class_grade,
+            "last_login_at": s.last_login_at,
+            "inactivity_days": days,
+            "engagement_status": st,
+        })
+
+        if len(rows) >= limit:
+            break
+
+    return rows
