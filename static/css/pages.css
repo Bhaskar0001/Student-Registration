@@ -1,0 +1,151 @@
+
+/* pages.css — page-level polish */
+
+.card-center{
+  max-width: 620px;
+  margin: 28px auto;
+}
+
+.form{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+.form-label{
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.form-input{
+  width: 100%;
+  height: 46px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  outline: none;
+}
+
+.form-input:focus{
+  border-color: rgba(124,58,237,.65);
+  box-shadow: 0 0 0 4px rgba(124,58,237,.15);
+}
+
+.hint{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: -4px;
+}
+
+.error{
+  color: rgba(239,68,68,.95);
+  font-size: 13px;
+  margin-top: -4px;
+}
+
+.btn.btn-primary{
+  margin-top: 14px;
+  width: 100%;
+  height: 46px;
+}
+
+/* Mobile friendliness */
+@media (max-width: 520px){
+  .container{
+    padding: 14px;
+  }
+  .card{
+    padding: 14px;
+  }
+  .nav{
+    gap: 8px;
+  }
+  .nav-link{
+    padding: 8px 10px;
+  }
+}
+
+/* Tables: make them scroll if needed */
+.table-wrap{
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+/* Simple section spacing for dashboards */
+.section{
+  margin-top: 14px;
+}
+
+/* Small pill style for quick highlights */
+.pill{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+
+.nav-link{
+  position: relative;
+  font-weight: 600;
+}
+
+/* Active state: glow + underline */
+.nav-link.active{
+  color: var(--text);
+  border-color: rgba(124,58,237,.75);
+  background: rgba(124,58,237,.16);
+  box-shadow: 0 10px 28px rgba(124,58,237,.18);
+}
+
+/* Underline indicator */
+.nav-link.active::after{
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(124,58,237,.95), rgba(34,197,94,.85));
+  opacity: .9;
+}
+
+/* Better hover feel */
+.nav-link:hover{
+  transform: translateY(-1px);
+}
+
+/* Mobile spacing improvement */
+@media (max-width: 520px){
+  .nav{
+    gap: 8px;
+  }
+  .nav-link{
+    padding: 9px 10px;
+  }
+}
+.nav-logout-form { display:inline; }
+
+.nav-link-btn{
+  background: transparent;
+  border: 0;
+  padding: 10px 12px;     /* same as .nav-link */
+  border-radius: 10px;    /* same as .nav-link */
+  cursor: pointer;
+  font: inherit;
+  color: var(--muted);
+}
+
+.nav-link-btn:hover{
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+}

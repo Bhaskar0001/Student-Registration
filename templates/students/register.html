@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card card-center">
+  <h1 class="h1">Student Registration Portal</h1>
+  <p class="muted">Register a student securely. Email & mobile are encrypted before storing.</p>
+
+  <form method="post" class="form">
+    {% csrf_token %}
+
+    <label class="form-label">Full Name *</label>
+    <input class="form-input" name="full_name" value="{{ form.full_name.value|default:'' }}">
+    {% if form.full_name.errors %}<div class="error">{{ form.full_name.errors.0 }}</div>{% endif %}
+
+    <label class="form-label">Email Address * <span class="icon-muted">📧</span></label>
+    <input class="form-input" name="email" value="{{ form.email.value|default:'' }}">
+    <div class="hint">📧 Will be encrypted</div>
+    {% if form.email.errors %}<div class="error">{{ form.email.errors.0 }}</div>{% endif %}
+
+    <label class="form-label">Mobile Number * <span class="icon-muted">🔒</span></label>
+    <input class="form-input" name="mobile" value="{{ form.mobile.value|default:'' }}">
+    <div class="hint">🔒 Will be encrypted</div>
+    {% if form.mobile.errors %}<div class="error">{{ form.mobile.errors.0 }}</div>{% endif %}
+
+    <label class="form-label">Class/Grade *</label>
+    <select class="form-input" name="class_grade">
+      {% for v,t in form.fields.class_grade.choices %}
+        <option value="{{ v }}" {% if form.class_grade.value == v %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <button class="btn btn-primary" type="submit">Register Student</button>
+  </form>
+</div>
+{% endblock %}

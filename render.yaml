@@ -1,0 +1,20 @@
+services:
+  - type: pserv
+    name: mysql
+    env: docker
+    plan: free
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 1
+    envVars:
+      - key: MYSQL_DATABASE
+        value: student_portal
+      - key: MYSQL_USER
+        value: student_user
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+    dockerCommand: >
+      --default-authentication-plugin=mysql_native_password

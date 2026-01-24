@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h1">Admin Dashboard</h1>
+<p class="muted">Engagement overview with at-risk detection (inactivity > 7 days).</p>
+
+<div class="grid-3">
+  <div class="card">
+    <a class="btn btn-secondary" href="{% url 'students:register' %}">← Back</a>
+
+    <div class="label">Total Students</div>
+    <div class="kpi">{{ counts.total }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Active</div>
+    <div class="kpi text-success">{{ counts.active }}</div>
+  </div>
+  <div class="card">
+    <div class="label">At Risk</div>
+    <div class="kpi text-warning">{{ counts.at_risk }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+    <h2 class="h2" style="margin:0;">Student Engagement Status</h2>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="btn btn-secondary" href="/admin/dashboard/">All</a>
+      <a class="btn btn-secondary" href="/admin/dashboard/?status=ACTIVE">Active</a>
+      <a class="btn btn-secondary" href="/admin/dashboard/?status=AT_RISK">At Risk</a>
+      <a class="btn btn-secondary" href="{% url 'dashboards:export_engagement_csv' %}?status={{ status }}">Export CSV</a>
+    </div>
+  </div>
+
+  <table class="data-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Status</th>
+        <th>Last Active</th>
+        <th>Days</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.class_grade }}</td>
+        <td>
+          {% if r.engagement_status == "ACTIVE" %}
+            <span class="badge badge-active">🟢 ACTIVE</span>
+          {% else %}
+            <span class="badge badge-at-risk">🟡 AT_RISK</span>
+          {% endif %}
+        </td>
+        <td>{{ r.last_login_at|default:"Never" }}</td>
+        <td>{{ r.inactivity_days }}</td>
+        <td>
+          <a class="btn btn-secondary" style="height:36px;" href="{% url 'dashboards:mark_active_now' r.id %}">
+            Mark Active Now
+          </a>
+          <a class="btn btn-secondary" style="height:36px;" href="{% url 'students:edit_student' r.id %}">
+            Edit
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h1">Encryption Proof</h1>
+<p class="muted">
+  This page shows only ciphertext length + safe previews + hashes.
+  No decrypted email/mobile is displayed.
+</p>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>UID</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Email Enc (bytes)</th>
+        <th>Email Enc Preview</th>
+        <th>Email Hash</th>
+        <th>Mobile Enc (bytes)</th>
+        <th>Mobile Enc Preview</th>
+        <th>Mobile Hash</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.student_uid }}</td>
+        <td>{{ r.full_name }}</td>
+        <td>{{ r.class_grade }}</td>
+        <td>{{ r.email_enc_len }}</td>
+        <td><code>{{ r.email_enc_preview }}</code></td>
+        <td><code>{{ r.email_hash_hex }}…</code></td>
+        <td>{{ r.mobile_enc_len }}</td>
+        <td><code>{{ r.mobile_enc_preview }}</code></td>
+        <td><code>{{ r.mobile_hash_hex }}…</code></td>
+        <td>{{ r.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

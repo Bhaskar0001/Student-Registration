@@ -1,0 +1,79 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Assignment</title>
+
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+</head>
+
+<body>
+  <header class="topbar">
+    <nav class="nav">
+      {% url 'students:register' as register_url %}
+      {% url 'accounts:parent_login' as parent_login_url %}
+      {% url 'accounts:admin_login' as admin_login_url %}
+      {% url 'parents:parent_dashboard' as parent_dash_url %}
+      {% url 'dashboards:admin_dashboard' as admin_dash_url %}
+      {% url 'audit:audit_logs' as audit_logs_url %}
+
+      <a class="nav-link {% if request.path == register_url %}active{% endif %}" href="{{ register_url }}">
+        Register
+      </a>
+
+      {% if user.is_authenticated %}
+        {% if user.is_staff or user.is_superuser %}
+          <a class="nav-link {% if request.path == admin_dash_url %}active{% endif %}" href="{{ admin_dash_url }}">
+            Admin Dashboard
+          </a>
+          <a class="nav-link" href="{% url 'dashboards:encryption_proof' %}">Encryption Proof</a>
+
+
+          <a class="nav-link {% if request.path == audit_logs_url %}active{% endif %}" href="{{ audit_logs_url }}">
+            Audit Logs
+          </a>
+        {% else %}
+          <a class="nav-link {% if request.path == parent_dash_url %}active{% endif %}" href="{{ parent_dash_url }}">
+            Parent Dashboard
+          </a>
+        {% endif %}
+
+<form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+  {% csrf_token %}
+  <button class="nav-link" style="background:none;border:none;cursor:pointer;">
+    Logout
+  </button>
+</form>
+
+      {% else %}
+        <a class="nav-link {% if request.path == parent_login_url %}active{% endif %}" href="{{ parent_login_url }}">
+          Parent Login
+        </a>
+
+        <a class="nav-link {% if request.path == admin_login_url %}active{% endif %}" href="{{ admin_login_url }}">
+          Admin Login
+        </a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% if messages %}
+      {% for m in messages %}
+        <div class="alert {% if m.tags %}alert-{{ m.tags }}{% else %}alert-info{% endif %}">
+          {{ m }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer"></footer>
+</body>
+</html>

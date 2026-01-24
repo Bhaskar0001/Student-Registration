@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h1">Audit Logs - Student Data Changes</h1>
+<p class="muted">Sensitive data is masked as <strong>[ENCRYPTED]</strong>.</p>
+
+<!-- Filters -->
+<form method="get" class="card" style="margin-bottom:16px;">
+  <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+    <a class="btn btn-secondary" href="{% url 'dashboards:admin_dashboard' %}">← Back to Admin</a>
+
+    <div>
+      <label class="form-label">Field</label>
+      <select name="field" class="form-input" style="height:42px;">
+        {% for f in field_options %}
+          <option value="{{ f }}" {% if f == field %}selected{% endif %}>{{ f }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="form-label">Last N days</label>
+      <select name="days" class="form-input" style="height:42px;">
+        <option value="7" {% if days == 7 %}selected{% endif %}>7</option>
+        <option value="30" {% if days == 30 %}selected{% endif %}>30</option>
+        <option value="90" {% if days == 90 %}selected{% endif %}>90</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" style="height:42px;" type="submit">Apply Filters</button>
+    <a class="btn btn-secondary" style="height:42px;" href="{% url 'audit:audit_logs' %}">Reset</a>
+  </div>
+
+  <div class="hint" style="margin-top:10px;">
+    🔒 Encrypted fields are shown as <strong>[ENCRYPTED]</strong>.
+  </div>
+</form>
+
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Student</th>
+        <th>Field</th>
+        <th>Old → New</th>
+        <th>Changed By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log.changed_at|date:"M d, Y g:i A" }}</td>
+        <td>{{ log.student.full_name }}</td>
+        <td>{{ log.field_name }}</td>
+        <td>{{ log.old_value }} → {{ log.new_value }}</td>
+        <td>
+          {% if log.changed_by == "admin_or_system" %}
+            admin/system
+          {% else %}
+            {{ log.changed_by }}
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="muted">No logs found for selected filters.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:520px; margin:32px auto;">
+  <h1 class="h1" style="margin-top:0;">Login</h1>
+  <p class="muted">Secure access for parents and admins.</p>
+
+  <form method="post" action="{% url 'accounts:login' %}">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div style="margin-top:16px;">
+      <label class="form-label">Username</label>
+      <input class="form-input" type="text" name="username" autocomplete="username" required>
+      {% if form.username.errors %}
+        <div class="field-error">{{ form.username.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div style="margin-top:16px;">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" name="password" autocomplete="current-password" required>
+      {% if form.password.errors %}
+        <div class="field-error">{{ form.password.errors }}</div>
+      {% endif %}
+    </div>
+
+    <button class="btn btn-primary" style="margin-top:18px; width:100%; height:48px;" type="submit">
+      Login
+    </button>
+
+    <p class="muted" style="margin-top:14px;">Admin users can login here too.</p>
+  </form>
+</div>
+{% endblock %}

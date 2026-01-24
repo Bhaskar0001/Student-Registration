@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h1">Parent Portal - Welcome, {{ parent.full_name }}</h1>
+<p class="muted">Read-only progress view. You’ll receive alerts if engagement drops below normal levels.</p>
+
+{% for it in items %}
+  <div class="card">
+    <h2 class="h2">👤 {{ it.full_name }}</h2>
+    <a class="btn btn-secondary" href="{% url 'students:register' %}">← Back</a>
+
+    <p>📚 Class {{ it.class_grade }}</p>
+
+    <p>
+      Engagement Status:
+      {% if it.status == "ACTIVE" %}
+        <span class="badge badge-active">🟢 ACTIVE</span>
+      {% else %}
+        <span class="badge badge-at-risk">🟡 AT_RISK</span>
+      {% endif %}
+    </p>
+
+    <p>Last Activity: {{ it.last_login_at|default:"No activity yet" }}</p>
+
+    <hr class="sep">
+
+    <h3 class="h3">Recent Activity Summary</h3>
+    <ul class="list">
+      <li>Attendance: {{ it.performance.attendance }}</li>
+      <li>Assignments: {{ it.performance.completed_assignments }}</li>
+    </ul>
+  </div>
+{% empty %}
+  <div class="card">
+    <p>No student linked yet. Ask admin to link your account to your child.</p>
+  </div>
+{% endfor %}
+{% endblock %}
