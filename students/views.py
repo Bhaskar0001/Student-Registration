@@ -75,7 +75,7 @@ def register(request):
                     message=body,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[to_email],
-                    fail_silently=bool(settings.DEBUG),  # dev won't crash, prod should show errors in logs
+                    fail_silently=False,  # dev won't crash, prod should show errors in logs
                 )
             except Exception as e:
                 # never block registration
