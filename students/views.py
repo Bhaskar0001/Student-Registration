@@ -75,7 +75,7 @@ def register(request):
                     message=body,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[to_email],
-                    fail_silently=bool(settings.DEBUG)
+                    fail_silently=False
                 )
             except Exception as e:
                 # never block registration
