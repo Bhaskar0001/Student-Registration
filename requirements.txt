@@ -1,10 +1,11 @@
-Django==3.2.25
+Django==4.2.11
 gunicorn==22.0.0
 whitenoise==6.7.0
 python-dotenv==1.0.1
 django-extensions==3.2.3
 
-mysqlclient==2.1.1
+mysqlclient==2.2.4
+
 cryptography==46.0.3
 cffi==2.0.0
 pycparser==3.0
