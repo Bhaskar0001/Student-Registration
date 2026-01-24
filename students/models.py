@@ -1,4 +1,4 @@
-frofrom django.db import models
+from django.db import models
 from django.core.exceptions import ValidationError
 
 from .crypto import encrypt_value, decrypt_value, hash_value
@@ -57,8 +57,6 @@ class Student(models.Model):
         if not self.mobile_enc or not self.mobile_hash:
             raise ValidationError("Mobile must be set using set_mobile(mobile).")
 
-    def __str__(self):
-        return f"{self.student_uid} - {self.full_name}"
 
 
 
