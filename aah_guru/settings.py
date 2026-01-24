@@ -2,59 +2,41 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env (if exists)
-if os.getenv("RENDER"):
-    pass  # Render injects env vars
-else:
+# Load .env only locally
+if not os.getenv("RENDER"):
     load_dotenv(BASE_DIR / ".env")
 
-# Quick-start development settings - unsuitable for production
+# ---------------------------
+# Core
+# ---------------------------
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
-    "django-insecure-wr(dajkf)t50fe!m@xvjz3qbg0zrqxo9eu@bjpuep+l6%!+w%n"
+    "django-insecure-change-me"
 )
 
-DEBUG = os.getenv("DJANGO_DEBUG", "True").strip().lower() in ("1", "true", "yes", "on")
+DEBUG = os.getenv("DJANGO_DEBUG", "False").strip().lower() in ("1", "true", "yes", "on")
 
-# -------------------------------
-# Render host + CSRF fixes (IMPORTANT)
-# -------------------------------
-RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip()
+# Render sets this automatically (very important)
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
+# ALLOWED_HOSTS from env + render hostname
+extra_hosts = os.getenv("ALLOWED_HOSTS", "")
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-# Always allow Render hostname
-if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+if extra_hosts.strip():
+    ALLOWED_HOSTS += [h.strip() for h in extra_hosts.split(",") if h.strip()]
+
+if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# Allow all onrender subdomains
-if ".onrender.com" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(".onrender.com")
+# (Optional) allow all *.onrender.com subdomains
+ALLOWED_HOSTS.append(".onrender.com")
 
-CSRF_TRUSTED_ORIGINS = []
-if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
-
-for h in ALLOWED_HOSTS:
-    if h.endswith("onrender.com") and not h.startswith("."):
-        origin = f"https://{h}"
-        if origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(origin)
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-USE_X_FORWARDED_HOST = True
-
-# -------------------------------
-# Your encryption settings
-# -------------------------------
-FIELD_ENCRYPTION_KEY = os.getenv("FIELD_ENCRYPTION_KEY", "")
-HASH_PEPPER = os.getenv("HASH_PEPPER", "dev-pepper-change-me")
-
-# Application definition
+# ---------------------------
+# Apps
+# ---------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -64,7 +46,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
 
-    # Your apps
     "students",
     "parents",
     "dashboards",
@@ -102,23 +83,29 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "aah_guru.wsgi.application"
 
+# ---------------------------
 # Database
+# ---------------------------
 DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").strip().lower()
 
 if DB_ENGINE == "mysql":
+    ca_path = os.path.join(BASE_DIR, "ca.pem")
+
+    options = {"charset": "utf8mb4"}
+
+    # Use SSL only if ca.pem exists (prevents crash)
+    if os.path.exists(ca_path):
+        options["ssl"] = {"ca": ca_path}
+
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
+            "NAME": os.getenv("DB_NAME", ""),
+            "USER": os.getenv("DB_USER", ""),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", ""),
             "PORT": os.getenv("DB_PORT", "3306"),
-            "OPTIONS": {
-                "charset": "utf8mb4",
-                # Aiven SSL (CA cert file path we'll create during build)
-                "ssl": {"ca": os.path.join(BASE_DIR, "ca.pem")},
-            },
+            "OPTIONS": options,
             "CONN_MAX_AGE": 60,
         }
     }
@@ -130,7 +117,9 @@ else:
         }
     }
 
+# ---------------------------
 # Password validation
+# ---------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -138,19 +127,29 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Internationalization
+# ---------------------------
+# I18N
+# ---------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# ---------------------------
+# Static
+# ---------------------------
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# If you have a /static folder in repo, keep this. If not, remove this line.
+if (BASE_DIR / "static").exists():
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Email Configuration
+# ---------------------------
+# Email
+# ---------------------------
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
@@ -163,8 +162,35 @@ else:
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "no-reply@aahguru.local")
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# ---------------------------
+# Encryption settings
+# ---------------------------
+FIELD_ENCRYPTION_KEY = os.getenv("FIELD_ENCRYPTION_KEY", "")
+HASH_PEPPER = os.getenv("HASH_PEPPER", "dev-pepper-change-me")
 
+# ---------------------------
+# Auth redirects
+# ---------------------------
 LOGIN_URL = "/accounts/parent/login/"
 LOGIN_REDIRECT_URL = "/parent/dashboard/"
 LOGOUT_REDIRECT_URL = "/accounts/parent/login/"
+
+# ---------------------------
+# Render / HTTPS proxy
+# ---------------------------
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = []
+
+# If Render hostname exists
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
+# Also trust any onrender.com hosts you explicitly add
+for h in ALLOWED_HOSTS:
+    if h and ("onrender.com" in h) and not h.startswith("."):
+        CSRF_TRUSTED_ORIGINS.append(f"https://{h}")
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
