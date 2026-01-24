@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-
+from .mailer import send_student_email
 from .forms import StudentRegistrationForm, StudentEditForm
 from .models import Student
 from audit.models import StudentAuditLog
@@ -61,26 +61,18 @@ def register(request):
                 return render(request, "students/register.html", {"form": form})
 
             # Requirement #3: send confirmation email using decrypted email from DB
-            try:
-                to_email = s.email  # decrypted property
-                subject = "Registration Successful"
-                body = (
-                    f"Hello {s.full_name},\n\n"
-                    f"Your registration is successful.\n"
-                    f"Registration ID: {s.student_uid}\n\n"
-                    f"Thank you."
-                )
-                send_mail(
-                    subject=subject,
-                    message=body,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[to_email],
-                    fail_silently=False
-                )
-            except Exception as e:
-                # never block registration
-                messages.warning(request, f"Student registered, but email could not be sent: {e}")
-
+ try:
+    to_email = s.email
+    subject = "Registration Successful"
+    body = (
+        f"Hello {s.full_name},\n\n"
+        f"Your registration is successful.\n"
+        f"Registration ID: {s.student_uid}\n\n"
+        f"Thank you."
+    )
+    send_student_email(to_email, subject, body)
+except Exception as e:
+    messages.warning(request, f"Student registered, but email could not be sent: {e}")
             messages.success(
                 request,
                 f"Student registered successfully: {s.full_name} (ID: {s.student_uid})"
