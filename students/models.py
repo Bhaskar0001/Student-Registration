@@ -1,5 +1,4 @@
-from django.db import models
-from django.utils import timezone
+frofrom django.db import models
 from django.core.exceptions import ValidationError
 
 from .crypto import encrypt_value, decrypt_value, hash_value
@@ -15,9 +14,8 @@ class Student(models.Model):
     mobile_enc = models.BinaryField()
 
     # hashes for uniqueness/search
-email_hash = models.CharField(max_length=64, unique=True, db_index=True)
-mobile_hash = models.CharField(max_length=64, unique=True, db_index=True)
-
+    email_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    mobile_hash = models.CharField(max_length=64, unique=True, db_index=True)
 
     last_login_at = models.DateTimeField(null=True, blank=True)
 
@@ -54,16 +52,15 @@ mobile_hash = models.CharField(max_length=64, unique=True, db_index=True)
     # Auto-validate before save
     # -----------------------
     def clean(self):
-        # Ensure enc + hash exist (prevents saving plain data by mistake)
         if not self.email_enc or not self.email_hash:
             raise ValidationError("Email must be set using set_email(email).")
         if not self.mobile_enc or not self.mobile_hash:
             raise ValidationError("Mobile must be set using set_mobile(mobile).")
 
-    def save(self, *args, **kwargs):
-        # run model validation
-        self.full_clean()
-        return super().save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.student_uid} - {self.full_name}"
+
+
 
     def inactivity_days(self) -> int:
         if not self.last_login_at:
