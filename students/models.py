@@ -15,8 +15,9 @@ class Student(models.Model):
     mobile_enc = models.BinaryField()
 
     # hashes for uniqueness/search
-    email_hash = models.CharField(max_length=64, unique=True, db_index=True)
-    mobile_hash = models.BinaryField(max_length=32, unique=True)
+email_hash = models.CharField(max_length=64, unique=True, db_index=True)
+mobile_hash = models.CharField(max_length=64, unique=True, db_index=True)
+
 
     last_login_at = models.DateTimeField(null=True, blank=True)
 
