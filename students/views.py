@@ -61,18 +61,20 @@ def register(request):
                 return render(request, "students/register.html", {"form": form})
 
             # Requirement #3: send confirmation email using decrypted email from DB
- try:
-    to_email = s.email
-    subject = "Registration Successful"
-    body = (
-        f"Hello {s.full_name},\n\n"
-        f"Your registration is successful.\n"
-        f"Registration ID: {s.student_uid}\n\n"
-        f"Thank you."
-    )
-    send_student_email(to_email, subject, body)
-except Exception as e:
-    messages.warning(request, f"Student registered, but email could not be sent: {e}")
+            # Send email (Resend)
+            try:
+                to_email = s.email
+                subject = "Registration Successful"
+                body = (
+                    f"Hello {s.full_name},\n\n"
+                    f"Your registration is successful.\n"
+                    f"Registration ID: {s.student_uid}\n\n"
+                    f"Thank you."
+                )
+                send_student_email(to_email, subject, body)
+            except Exception as e:
+                messages.warning(request, f"Student registered, but email could not be sent: {e}")
+
             messages.success(
                 request,
                 f"Student registered successfully: {s.full_name} (ID: {s.student_uid})"
