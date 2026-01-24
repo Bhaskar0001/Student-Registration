@@ -1,73 +1,101 @@
-{% extends "base.html" %}
-{% block content %}
-<h1 class="h1">Admin Dashboard</h1>
-<p class="muted">Engagement overview with at-risk detection (inactivity > 7 days).</p>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; }
+    .cards { display: flex; gap: 12px; margin-bottom: 16px; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 8px; min-width: 160px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
+    th { background: #f7f7f7; text-align: left; }
+    .badge { padding: 3px 8px; border-radius: 999px; font-size: 12px; border: 1px solid #ccc; }
+    .active { background: #eaffea; }
+    .at_risk { background: #fff7e6; }
+    .inactive { background: #ffecec; }
+    .topbar { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
+    a.btn, button.btn { background:#111; color:#fff; padding:8px 10px; border-radius:6px; text-decoration:none; border:0; cursor:pointer; }
+    select { padding: 8px; }
+  </style>
+</head>
+<body>
 
-<div class="grid-3">
-  <div class="card">
-    <a class="btn btn-secondary" href="{% url 'students:register' %}">← Back</a>
+  <h2>Admin Dashboard</h2>
 
-    <div class="label">Total Students</div>
-    <div class="kpi">{{ counts.total }}</div>
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="topbar">
+    <form method="get">
+      <label>Filter:</label>
+      <select name="status" onchange="this.form.submit()">
+        <option value="" {% if not status %}selected{% endif %}>All</option>
+        <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+        <option value="at_risk" {% if status == "at_risk" %}selected{% endif %}>At Risk</option>
+        <option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactive</option>
+      </select>
+    </form>
+
+    <a class="btn" href="{% url 'dashboards:export_engagement_csv' %}{% if status %}?status={{status}}{% endif %}">
+      Export CSV
+    </a>
+
+    <a class="btn" href="{% url 'dashboards:encryption_proof' %}">
+      Encryption Proof
+    </a>
+
+    <a class="btn" href="/django-admin/">
+      Django Admin
+    </a>
   </div>
-  <div class="card">
-    <div class="label">Active</div>
-    <div class="kpi text-success">{{ counts.active }}</div>
-  </div>
-  <div class="card">
-    <div class="label">At Risk</div>
-    <div class="kpi text-warning">{{ counts.at_risk }}</div>
-  </div>
-</div>
 
-<div class="card">
-  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
-    <h2 class="h2" style="margin:0;">Student Engagement Status</h2>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <a class="btn btn-secondary" href="/admin/dashboard/">All</a>
-      <a class="btn btn-secondary" href="/admin/dashboard/?status=ACTIVE">Active</a>
-      <a class="btn btn-secondary" href="/admin/dashboard/?status=AT_RISK">At Risk</a>
-      <a class="btn btn-secondary" href="{% url 'dashboards:export_engagement_csv' %}?status={{ status }}">Export CSV</a>
-    </div>
+  <div class="cards">
+    <div class="card"><b>Total</b><div>{{ counts.total }}</div></div>
+    <div class="card"><b>Active</b><div>{{ counts.active }}</div></div>
+    <div class="card"><b>At Risk</b><div>{{ counts.at_risk }}</div></div>
+    <div class="card"><b>Inactive</b><div>{{ counts.inactive }}</div></div>
   </div>
 
-  <table class="data-table" style="margin-top:12px;">
+  <table>
     <thead>
       <tr>
+        <th>UID</th>
         <th>Name</th>
         <th>Class</th>
         <th>Status</th>
         <th>Last Active</th>
-        <th>Days</th>
+        <th>Inactivity Days</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
       {% for r in rows %}
       <tr>
+        <td>{{ r.student_uid }}</td>
         <td>{{ r.full_name }}</td>
         <td>{{ r.class_grade }}</td>
         <td>
-          {% if r.engagement_status == "ACTIVE" %}
-            <span class="badge badge-active">🟢 ACTIVE</span>
-          {% else %}
-            <span class="badge badge-at-risk">🟡 AT_RISK</span>
-          {% endif %}
+          <span class="badge {{ r.engagement_status }}">
+            {{ r.engagement_status }}
+          </span>
         </td>
-        <td>{{ r.last_login_at|default:"Never" }}</td>
+        <td>{{ r.last_login_at|default:"-" }}</td>
         <td>{{ r.inactivity_days }}</td>
         <td>
-          <a class="btn btn-secondary" style="height:36px;" href="{% url 'dashboards:mark_active_now' r.id %}">
-            Mark Active Now
-          </a>
-          <a class="btn btn-secondary" style="height:36px;" href="{% url 'students:edit_student' r.id %}">
-            Edit
-          </a>
+          <a class="btn" href="{% url 'dashboards:mark_active_now' r.id %}">Mark Active Now</a>
         </td>
       </tr>
+      {% empty %}
+      <tr><td colspan="7">No students found.</td></tr>
       {% endfor %}
     </tbody>
   </table>
-</div>
-{% endblock %}
+
+</body>
+</html>
