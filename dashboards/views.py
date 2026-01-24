@@ -121,8 +121,8 @@ def encryption_proof(request):
             "mobile_dec": mobile_dec,
             "email_enc_len": len(s.email_enc or b""),
             "mobile_enc_len": len(s.mobile_enc or b""),
-            "email_hash_hex": _hash_display(s.email_hash),
-            "mobile_hash_hex": _hash_display(s.mobile_hash),
+            "email_hash_hex": s.email_hash or "",
+            "mobile_hash_hex": s.mobile_hash or "",
         })
 
     return render(request, "dashboards/encryption_proof.html", {"rows": rows})
