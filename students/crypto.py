@@ -24,14 +24,15 @@ def decrypt_value(value: bytes) -> str:
     return _fernet().decrypt(value).decode("utf-8")
 
 
-def hash_value(value: str) -> bytes:
+def hash_value(value: str) -> str:
     """
-    SHA-256(value + pepper) → 32 bytes
+    SHA-256(value + pepper) -> 64-char hex string
     Used for uniqueness/search without decrypting.
     """
     pepper = settings.HASH_PEPPER or ""
     raw = (value.strip() + pepper).encode("utf-8")
-    return hashlib.sha256(raw).digest()
+    return hashlib.sha256(raw).hexdigest()
+
 
 encrypt_text = encrypt_value
 decrypt_text = decrypt_value
