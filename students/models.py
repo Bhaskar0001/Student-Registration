@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 from .crypto import encrypt_value, decrypt_value, hash_value
@@ -9,11 +10,11 @@ class Student(models.Model):
     full_name = models.CharField(max_length=120)
     class_grade = models.CharField(max_length=20)
 
-    # encrypted (ciphertext)
+    # encrypted ciphertext (bytes)
     email_enc = models.BinaryField()
     mobile_enc = models.BinaryField()
 
-    # hashes for uniqueness/search
+    # hashes for uniqueness/search (string hex)
     email_hash = models.CharField(max_length=64, unique=True, db_index=True)
     mobile_hash = models.CharField(max_length=64, unique=True, db_index=True)
 
@@ -22,9 +23,6 @@ class Student(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # -----------------------
-    # Convenience properties (not DB fields)
-    # -----------------------
     @property
     def email(self) -> str:
         return decrypt_value(self.email_enc)
@@ -33,9 +31,6 @@ class Student(models.Model):
     def mobile(self) -> str:
         return decrypt_value(self.mobile_enc)
 
-    # -----------------------
-    # Helper setters
-    # -----------------------
     def set_email(self, email: str):
         if not email:
             raise ValidationError("Email is required.")
@@ -48,17 +43,11 @@ class Student(models.Model):
         self.mobile_enc = encrypt_value(mobile)
         self.mobile_hash = hash_value(mobile)
 
-    # -----------------------
-    # Auto-validate before save
-    # -----------------------
     def clean(self):
         if not self.email_enc or not self.email_hash:
             raise ValidationError("Email must be set using set_email(email).")
         if not self.mobile_enc or not self.mobile_hash:
             raise ValidationError("Mobile must be set using set_mobile(mobile).")
-
-
-
 
     def inactivity_days(self) -> int:
         if not self.last_login_at:
