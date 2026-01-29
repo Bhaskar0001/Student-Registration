@@ -32,6 +32,32 @@ I have included several utility scripts to help with development:
 - **Styling**: `modern.css` now centralizes all premium accents, isolating them from core layout logic for easier maintenance.
 
 
+1. How the Mapping Works (The Logic)
+When a user fills out the registration form, the system focuses on the Parent Email field:
+
+Step A (Lookup): The system checks if a user with that Parent Email already exists in the database.
+Step B (Existing Parent): If the email already exists, the system simply links the new student to that existing parent. They don't need a new account.
+Step C (New Parent): If the email is new, the system automatically creates:
+A new User Account.
+A new Parent Profile.
+A Student-Parent Link (Bridge) between the student and that parent.
+2. What are the Credentials?
+Username: They can log in using their Email Address.
+Password:
+For New Parents: The system generates a Temporary Password (like _A7kL9z2b).
+Password:
+For New Parents: The system generates a Temporary Password (like _A7kL9z2b).
+Where to find it?: Because I updated the code for you, this password will appear in a Green Success Bar at the top of the page immediately after you click "Register". It is also sent to their email.
+For Existing Parents: They use their Existing Password. When they log in, they will automatically see the new student added to their dashboard alongside their other children.
+
+.
+💡 Example Scenario:
+You register Student A with parent email mom@example.com.
+The system creates an account and shows you a password: Temp123.
+Next, you register Student B with the same parent email mom@example.com.
+The system sees the email exists, links Student B to the same account, and doesn't change the password.
+When the parent logs in with mom@example.com, they see both Student A and Student B in their portal.
+
 
 
 ##  Tech Stack
