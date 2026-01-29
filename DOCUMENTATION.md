@@ -14,31 +14,7 @@ The project is built using **Django 4.2**, following a modular architecture:
 -   **`dashboards`**: Business logic for Admin and Parent views.
 -   **`audit`**: Tracking of changes to student records.
 
-### 🔑 Test Credentials (Live Site)
-- **Parent Portal**: `parent1@example.com` / `Parent@12345`
-- **Admin Dashboard**: `admin` / `Admin@12345`
-
-> [!TIP]
 > **Parent Password Tip**: When you register a new student, the system automatically creates a parent account and generates a temporary password. For your convenience during testing, this password is now displayed in the **Success Message** at the top of the registration page after you click submit. It is also sent via email.
-
----
-
-## 🚀 Deployment Guide (Update your Repo)
-
-To update your repository [Bhaskar0001/Student-Registration](https://github.com/Bhaskar0001/Student-Registration.git):
-
-1. **Stage all changes**:
-   ```bash
-   git add .
-   ```
-2. **Commit**:
-   ```bash
-   git commit -m "Complete project with full documentation"
-   ```
-3. **Push to GitHub**:
-   ```bash
-   git push -u origin main
-   ```
 
 ---
 
