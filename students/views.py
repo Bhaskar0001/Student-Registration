@@ -192,6 +192,7 @@ def edit_student(request, student_id: int):
                 messages.error(request, f"Validation error: {e}")
                 return render(request, "students/edit_student.html", {"form": form, "student": s})
             except Exception as e:
+                logger.exception(f"Unexpected error during student update for student ID {s.id}: {e}")
                 messages.error(request, f"Could not update student: {e}")
                 return render(request, "students/edit_student.html", {"form": form, "student": s})
 

@@ -16,7 +16,7 @@ def send_student_email(to_email: str, subject: str, body: str):
             message=body,
             from_email=from_email,
             recipient_list=[to_email],
-            fail_silently=False,
+            fail_silently=True,  # Critical for production: ensures the site doesn't 500 if Gmail is slow.
         )
     except Exception as e:
         logger.error(f"Failed to send email to {to_email}: {e}")
