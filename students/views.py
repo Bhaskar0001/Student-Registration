@@ -141,10 +141,14 @@ def register(request):
                     print(f"Parent email error: {e}")
                     messages.warning(request, "Student registered, but parent confirmation email failed.")
 
-            messages.success(
-                request,
-                f"Student registered successfully: {s.full_name} (ID: {s.student_uid}). Parent account created."
-            )
+            success_msg = f"Successfully registered {s.full_name} (ID: {s.student_uid})."
+            if password_info:
+                # Include the password in the message so the user can see it during testing
+                success_msg += f" A new parent portal account has been created for {parent_email_input}."
+                # Safe to show here as it's a one-time message for the registrant
+                success_msg += f" LOGIN PASSWORD: {temp_password}"
+
+            messages.success(request, success_msg)
             return redirect("students:register")
 
     else:
