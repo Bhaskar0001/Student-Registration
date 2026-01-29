@@ -4,9 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import IntegrityError, transaction
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .mailer import send_student_email
+
+logger = logging.getLogger(__name__)
 from .forms import StudentRegistrationForm, StudentEditForm
 from .models import Student
 from audit.models import StudentAuditLog
@@ -102,6 +105,7 @@ def register(request):
                 messages.error(request, f"Validation error: {e}")
                 return render(request, "students/register.html", {"form": form})
             except Exception as e:
+                logger.exception(f"Unexpected error during registration: {e}")
                 messages.error(request, f"Could not register student: {e}")
                 return render(request, "students/register.html", {"form": form})
 

@@ -9,10 +9,14 @@ Follow these steps to test the registration flow and verify the parent-student m
 - **Username**: `admin`
 - **Password**: `Admin@12345`
 
-### Parent Portal
-- **URL**: [http://127.0.0.1:8000/accounts/parent/login/](http://127.0.0.1:8000/accounts/parent/login/)
-- **Username**: You can use either the username (`parent1`) or the **Parent Email** (e.g., `parent@gmail.com`).
-- **Password**: `Parent@12345` (for seeded account) or the generated password for new parents.
+### Parent Portal (Test Data)
+- **Email**: `parent_tester@aahguru.local`
+- **Password**: `Parent@12345`
+*(Note: These only work if you have run the seed script `python tools/setup_demo.py` on your server).*
+
+### Admin Dashboard (Test Data)
+- **Username**: `admin`
+- **Password**: `Admin@12345`
 
 ---
 
@@ -41,6 +45,14 @@ Follow these steps to test the registration flow and verify the parent-student m
 1. On the Parent Dashboard, verify that the student you just registered is listed.
 2. **Multiple Students**: Try registering another student using the *same parent email*.
 3. Login as that parent again; both students should now appear automatically.
+
+---
+
+## 4. Testing on Render (Live Site)
+If testing on your live Render URL:
+1. **Logs**: If you get a 500 error, check your **Render Dashboard -> Logs**. You will see a detailed Python error message.
+2. **Setup**: Ensure you have added all **Environment Variables** (SMTP, Secret Key, Encryption Keys) in the Render Settings.
+3. **Database**: If it's your first push, Render will run migrations automatically if you use the `build.sh` or the build command provided in `DOCUMENTATION.md`.
 
 ---
 
