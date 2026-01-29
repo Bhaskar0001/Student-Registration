@@ -8,25 +8,35 @@
     {% csrf_token %}
 
     <label class="form-label">Full Name *</label>
-    <input class="form-input" name="full_name" value="{{ form.full_name.value|default:'' }}">
+    <input class="form-input" name="full_name" value="{{ form.full_name.value|default:'' }}"
+      placeholder="Enter full name">
     {% if form.full_name.errors %}<div class="error">{{ form.full_name.errors.0 }}</div>{% endif %}
 
-    <label class="form-label">Email Address * <span class="icon-muted">📧</span></label>
-    <input class="form-input" name="email" value="{{ form.email.value|default:'' }}">
+    <label class="form-label">Student Email * <span class="icon-muted">📧</span></label>
+    <input class="form-input" name="email" type="email" value="{{ form.email.value|default:'' }}"
+      placeholder="student@example.com">
     <div class="hint">📧 Will be encrypted</div>
     {% if form.email.errors %}<div class="error">{{ form.email.errors.0 }}</div>{% endif %}
 
+    <label class="form-label">Parent/Guardian Name *</label>
+    <input class="form-input" name="parent_name" value="{{ form.parent_name.value|default:'' }}"
+      placeholder="Parent/Guardian full name">
+    {% if form.parent_name.errors %}<div class="error">{{ form.parent_name.errors.0 }}</div>{% endif %}
+
+    <label class="form-label">Parent Email * <span class="icon-muted">📧</span></label>
+    <input class="form-input" name="parent_email" type="email" value="{{ form.parent_email.value|default:'' }}"
+      placeholder="parent@example.com (for login & notifications)">
+    <div class="hint">📧 Parent will receive login credentials via this email</div>
+    {% if form.parent_email.errors %}<div class="error">{{ form.parent_email.errors.0 }}</div>{% endif %}
+
     <label class="form-label">Mobile Number * <span class="icon-muted">🔒</span></label>
-    <input class="form-input" name="mobile" value="{{ form.mobile.value|default:'' }}">
+    <input class="form-input" name="mobile" value="{{ form.mobile.value|default:'' }}"
+      placeholder="10-digit mobile number">
     <div class="hint">🔒 Will be encrypted</div>
     {% if form.mobile.errors %}<div class="error">{{ form.mobile.errors.0 }}</div>{% endif %}
 
     <label class="form-label">Class/Grade *</label>
-    <select class="form-input" name="class_grade">
-      {% for v,t in form.fields.class_grade.choices %}
-        <option value="{{ v }}" {% if form.class_grade.value == v %}selected{% endif %}>{{ t }}</option>
-      {% endfor %}
-    </select>
+    {{ form.class_grade }}
 
     <button class="btn btn-primary" type="submit">Register Student</button>
   </form>

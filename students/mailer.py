@@ -1,30 +1,25 @@
-import os
-import requests
+from django.core.mail import send_mail
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 def send_student_email(to_email: str, subject: str, body: str):
-    api_key = os.getenv("RESEND_API_KEY", "")
-    if not api_key:
-        raise Exception("RESEND_API_KEY is missing in environment variables")
+    """
+    Sends an email using the configured Django EMAIL_BACKEND.
+    """
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@student-portal.com")
 
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "Student Portal <onboarding@resend.dev>")
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=from_email,
+            recipient_list=[to_email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        logger.error(f"Failed to send email to {to_email}: {e}")
+        # Re-raise so views can handle/log it or show a message
+        raise e
 
-    payload = {
-        "from": from_email,
-        "to": [to_email],
-        "subject": subject,
-        "text": body,
-    }
-
-    r = requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json=payload,
-        timeout=20,
-    )
-
-    if r.status_code >= 400:
-        raise Exception(f"Resend error {r.status_code}: {r.text}")

@@ -1,37 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="h1">Parent Portal - Welcome, {{ parent.full_name }}</h1>
-<p class="muted">Read-only progress view. You’ll receive alerts if engagement drops below normal levels.</p>
 
-{% for it in items %}
-  <div class="card">
-    <h2 class="h2">👤 {{ it.full_name }}</h2>
-    <a class="btn btn-secondary" href="{% url 'students:register' %}">← Back</a>
-
-    <p>📚 Class {{ it.class_grade }}</p>
-
-    <p>
-      Engagement Status:
-      {% if it.status == "ACTIVE" %}
-        <span class="badge badge-active">🟢 ACTIVE</span>
-      {% else %}
-        <span class="badge badge-at-risk">🟡 AT_RISK</span>
-      {% endif %}
-    </p>
-
-    <p>Last Activity: {{ it.last_login_at|default:"No activity yet" }}</p>
-
-    <hr class="sep">
-
-    <h3 class="h3">Recent Activity Summary</h3>
-    <ul class="list">
-      <li>Attendance: {{ it.performance.attendance }}</li>
-      <li>Assignments: {{ it.performance.completed_assignments }}</li>
-    </ul>
+<div class="flex-between">
+  <h1 class="h1">Parent Portal - Welcome, {{ parent.full_name }}</h1>
+  <div class="nav">
+    <a class="btn btn-primary" href="{% url 'students:register' %}">
+      + Register Another Student
+    </a>
   </div>
-{% empty %}
+</div>
+
+<p class="muted" style="margin-bottom: 2rem;">
+  Read-only progress view for your linked students. You’ll receive alerts via <b>{{ request.user.email }}</b> if
+  engagement drops.
+</p>
+
+<div class="dashboard-grid">
+  {% for it in items %}
   <div class="card">
-    <p>No student linked yet. Ask admin to link your account to your child.</p>
+    <div class="flex-between" style="margin-bottom: 1rem;">
+      <h2 class="h2" style="margin-bottom: 0;">👤 {{ it.full_name }}</h2>
+      <span class="badge badge-{{ it.status }}-status">
+        {{ it.status }}
+      </span>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <p>📚 <b>Class {{ it.class_grade }}</b></p>
+      <p class="hint">Student ID: {{ it.student_uid }}</p>
+    </div>
+
+    <div class="table-container" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+      <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+        <b>Last Activity:</b>
+        {% if it.last_login_at %}
+        {{ it.last_login_at|date:"M d, Y H:i" }}
+        <span class="hint">({{ it.days }} days ago)</span>
+        {% else %}
+        <span class="hint">No activity yet</span>
+        {% endif %}
+      </p>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <h3 class="h3" style="font-size: 0.9rem; color: rgba(255,255,255,0.6); text-transform: uppercase;">Engagement
+        Summary</h3>
+      <ul style="list-style: none; padding: 0; margin-top: 0.5rem;">
+        <li
+          style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;">
+          <span>Attendance</span>
+          <span class="hint">N/A</span>
+        </li>
+        <li style="padding: 8px 0; display: flex; justify-content: space-between;">
+          <span>Assignments</span>
+          <span class="hint">N/A</span>
+        </li>
+      </ul>
+    </div>
   </div>
-{% endfor %}
+  {% empty %}
+  <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
+    <h2 class="h2">No students linked yet</h2>
+    <p class="muted">If you just registered a student, they should appear here shortly.</p>
+    <a class="btn btn-primary" style="margin-top: 1.5rem;" href="{% url 'students:register' %}">
+      Register a Student
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
 {% endblock %}

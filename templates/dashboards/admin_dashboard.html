@@ -1,105 +1,57 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Admin Dashboard</title>
+{% extends "base.html" %}
+{% block content %}
 
-   <style>
-  * { box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; padding: 16px; margin:0; background:#f6f7fb; color:#111; }
-  h2 { margin: 8px 0 16px; }
-
-  .wrap { max-width: 1100px; margin: 0 auto; }
-
-  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
-  .card { background:#fff; border:1px solid #e6e6e6; padding: 14px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
-  .card b { display:block; font-size: 13px; color:#666; margin-bottom:6px; }
-  .card div { font-size: 22px; font-weight: 700; }
-
-  .topbar { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; background:#fff; border:1px solid #e6e6e6;
-            padding: 12px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
-  select { padding: 8px 10px; border-radius: 10px; border:1px solid #ddd; }
-  label { font-size: 13px; color:#444; }
-
-  a.btn, button.btn { background:#111; color:#fff; padding:9px 12px; border-radius:10px; text-decoration:none; border:0; cursor:pointer; font-size: 13px; }
-  a.btn:hover, button.btn:hover { opacity: .9; }
-
-  .tablewrap { overflow:auto; background:#fff; border:1px solid #e6e6e6; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
-  table { width: 100%; border-collapse: collapse; min-width: 850px; }
-  th, td { border-bottom: 1px solid #eee; padding: 10px; font-size: 14px; white-space: nowrap; }
-  th { background: #fafafa; text-align: left; position: sticky; top: 0; z-index: 1; }
-
-  .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; border: 1px solid #ddd; display:inline-block; }
-  .active { background: #eaffea; }
-  .at_risk { background: #fff7e6; }
-  .inactive { background: #ffecec; }
-
-  ul { padding-left: 18px; }
-  li { margin: 6px 0; }
-
-  @media (max-width: 900px){
-    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-  @media (max-width: 520px){
-    .cards { grid-template-columns: 1fr; }
-  }
-</style>
-
-
- 
-</head>
-<body>
-
-  <h2>Admin Dashboard</h2>
-
-  {% if messages %}
-    <ul>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  <div class="topbar">
-    <form method="get">
-      <label>Filter:</label>
-      <select name="status" onchange="this.form.submit()">
-        <option value="" {% if not status %}selected{% endif %}>All</option>
-        <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
-        <option value="at_risk" {% if status == "at_risk" %}selected{% endif %}>At Risk</option>
-        <option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactive</option>
-      </select>
-    </form>
-
-    <a class="btn" href="{% url 'dashboards:export_engagement_csv' %}{% if status %}?status={{status}}{% endif %}">
+<div class="flex-between">
+  <h1 class="h1">Admin Dashboard</h1>
+  <div class="nav">
+    <a class="btn btn-secondary"
+      href="{% url 'dashboards:export_engagement_csv' %}{% if status %}?status={{status}}{% endif %}">
       Export CSV
     </a>
-
-    <a class="btn" href="{% url 'dashboards:encryption_proof' %}">
-      Encryption Proof
-    </a>
-
-    <a class="btn" href="/django-admin/">
+    <a class="btn btn-secondary" href="/django-admin/">
       Django Admin
     </a>
   </div>
+</div>
 
-  <div class="cards">
-    <div class="card"><b>Total</b><div>{{ counts.total }}</div></div>
-    <div class="card"><b>Active</b><div>{{ counts.active }}</div></div>
-    <div class="card"><b>At Risk</b><div>{{ counts.at_risk }}</div></div>
-    <div class="card"><b>Inactive</b><div>{{ counts.inactive }}</div></div>
+<div class="card" style="margin-bottom: 2rem;">
+  <form method="get" class="nav">
+    <label class="form-label" style="margin-bottom: 0;">Filter Status:</label>
+    <select name="status" class="form-input" style="width: auto; padding: 8px 36px 8px 16px;"
+      onchange="this.form.submit()">
+      <option value="" {% if not status %}selected{% endif %}>All Students</option>
+      <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+      <option value="at_risk" {% if status == "at_risk" %}selected{% endif %}>At Risk</option>
+      <option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactive</option>
+    </select>
+  </form>
+</div>
+
+<div class="dashboard-grid">
+  <div class="stat-card"><b>Total Students</b>
+    <div>{{ counts.total }}</div>
   </div>
+  <div class="stat-card"><b>Active</b>
+    <div>{{ counts.active }}</div>
+  </div>
+  <div class="stat-card"><b>At Risk</b>
+    <div>{{ counts.at_risk }}</div>
+  </div>
+  <div class="stat-card"><b>Inactive</b>
+    <div>{{ counts.inactive }}</div>
+  </div>
+</div>
 
+<div class="table-container">
   <table>
     <thead>
       <tr>
         <th>UID</th>
-        <th>Name</th>
+        <th>Student Name</th>
         <th>Class</th>
+        <th>Parent/Guardian</th>
         <th>Status</th>
         <th>Last Active</th>
-        <th>Inactivity Days</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -108,23 +60,37 @@
       <tr>
         <td>{{ r.student_uid }}</td>
         <td>{{ r.full_name }}</td>
-        <td>{{ r.class_grade }}</td>
+        <td>Class {{ r.class_grade }}</td>
         <td>
-          <span class="badge {{ r.engagement_status }}">
-            {{ r.engagement_status }}
+          <b>{{ r.parent_name }}</b>
+        </td>
+        <td>
+          <span class="badge badge-{{ r.engagement_status }}-status">
+            {{ r.engagement_status|title }}
           </span>
         </td>
-        <td>{{ r.last_login_at|default:"-" }}</td>
-        <td>{{ r.inactivity_days }}</td>
         <td>
-          <a class="btn" href="{% url 'dashboards:mark_active_now' r.id %}">Mark Active Now</a>
+          {% if r.last_login_at %}
+          {{ r.last_login_at|date:"M d, Y" }}
+          <div class="hint">{{ r.inactivity_days }} days ago</div>
+          {% else %}
+          <span class="hint">Never</span>
+          {% endif %}
+        </td>
+        <td>
+          <a class="btn-primary" style="padding: 6px 12px; font-size: 12px;"
+            href="{% url 'dashboards:mark_active_now' r.id %}">
+            Mark Active
+          </a>
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="7">No students found.</td></tr>
+      <tr>
+        <td colspan="7" style="text-align: center; padding: 3rem;">No students found matching filters.</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
+</div>
 
-</body>
-</html>
+{% endblock %}

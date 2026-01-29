@@ -10,3 +10,24 @@ requests==2.32.3
 cryptography==46.0.3
 cffi==2.0.0
 pycparser==3.0
+
+# --- PROJECT SPECIFICATIONS & IMPLEMENTED FEATURES ---
+# 1. Automated Parent-Student Linking:
+#    - Integration of parent details (name, email) into the registration process.
+#    - Background auto-creation of Parent User accounts during student registration.
+#    - Automatic relationship mapping via StudentParent model.
+#
+# 2. Enhanced Security & Privacy:
+#    - End-to-end encryption for Student Email and Mobile fields.
+#    - Deterministic hashing for unique lookups without exposing raw data.
+#    - Multi-layered authentication for Admin and Parent Portals.
+#
+# 3. Dynamic Engagement Tracking:
+#    - Real-time engagement status (Active/At-Risk/Inactive) based on activity.
+#    - Admin dashboard with filtering and bulk actions.
+#    - Automated email triggers for registration and login credentials.
+#
+# 4. Premium UI/UX Overhaul:
+#    - Responsive dark-themed interface using custom CSS.
+#    - Unified dashboard layouts with persistent navigation.
+#    - Exportable CSV reports for engagement data.

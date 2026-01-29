@@ -128,6 +128,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ---------------------------
+# Auth Backends
+# ---------------------------
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# ---------------------------
 # I18N
 # ---------------------------
 LANGUAGE_CODE = "en-us"
@@ -145,7 +153,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 if (BASE_DIR / "static").exists():
     STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # ---------------------------
 # Email
@@ -160,11 +168,11 @@ EMAIL_HOST_USER = os.getenv("SMTP_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "no-reply@aahguru.local")
 
-# If DEBUG=True OR SMTP creds missing => console backend (no real email send)
-if DEBUG or not (EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
+# Use SMTP if credentials exist, otherwise console
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # ---------------------------

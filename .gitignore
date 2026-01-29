@@ -22,3 +22,6 @@ media/
 Thumbs.db
 .vscode/
 .idea/
+
+# Documentation
+DOCUMENTATION.md

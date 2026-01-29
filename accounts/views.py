@@ -1,6 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect
+from students.mailer import send_student_email
+from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ParentLoginView(LoginView):
@@ -15,14 +20,23 @@ class ParentLoginView(LoginView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        super().form_valid(form)
-        user = self.request.user
-
+        user = form.get_user()
+        
         if user.is_staff or user.is_superuser:
             messages.error(self.request, "Admin accounts must login from Admin Login page.")
             return redirect("accounts:admin_login")
 
-        return redirect("parents:parent_dashboard")
+        response = super().form_valid(form)
+
+        if user.email:
+            try:
+                subject = "Login Notification"
+                body = f"Hello {user.first_name or 'Parent'},\n\nYour account was just logged into.\n\nTime: {timezone.now()}\n\nIf this was not you, please contact support."
+                send_student_email(user.email, subject, body)
+            except Exception as e:
+                logger.error(f"Failed to send login notification: {e}")
+
+        return response
 
 
 class AdminLoginView(LoginView):
@@ -37,11 +51,10 @@ class AdminLoginView(LoginView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        super().form_valid(form)
-        user = self.request.user
+        user = form.get_user()
 
         if not (user.is_staff or user.is_superuser):
             messages.error(self.request, "Parent accounts must login from Parent Login page.")
             return redirect("accounts:parent_login")
 
-        return redirect("dashboards:admin_dashboard")
+        return super().form_valid(form)

@@ -17,7 +17,18 @@ class StudentRegistrationForm(forms.Form):
         widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Full Name"})
     )
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={"class": "form-input", "placeholder": "Email Address"})
+        widget=forms.EmailInput(attrs={"class": "form-input", "placeholder": "Student Email (will be encrypted)"}),
+        label="Student Email"
+    )
+    parent_name = forms.CharField(
+        max_length=120,
+        widget=forms.TextInput(attrs={"class": "form-input", "placeholder": "Parent/Guardian Full Name"}),
+        label="Parent Name"
+    )
+    parent_email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"class": "form-input", "placeholder": "Parent Email (for login & notifications)"}),
+        label="Parent Email",
+        required=True
     )
     mobile = forms.CharField(
         max_length=20,
