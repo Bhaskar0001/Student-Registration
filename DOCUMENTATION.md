@@ -35,6 +35,18 @@ To update your repository [Bhaskar0001/Student-Registration](https://github.com/
 
 ---
 
+## 🛠️ Troubleshooting Live Site Errors (Diagnostic Tool)
+
+If you see an **Internal Server Error** on Render, visit this URL on your site:
+`https://your-site-name.onrender.com/accounts/status-check/`
+
+This page will safely check:
+- If your **Database** is connected.
+- If your **Encryption Keys** are correctly set in Render.
+- If your **SMTP Email** settings are present.
+
+---
+
 ## ⚠️ Important: Render Deployment Checklist (Fixing 500 Errors)
 
 If you see an **Internal Server Error** on Render, it is usually because of missing **Environment Variables**. Please ensure these are added in your Render Dashboard (Environment tab):
