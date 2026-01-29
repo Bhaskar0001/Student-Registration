@@ -14,6 +14,9 @@ The project is built using **Django 4.2**, following a modular architecture:
 -   **`dashboards`**: Business logic for Admin and Parent views.
 -   **`audit`**: Tracking of changes to student records.
 
+> [!TIP]
+> **Parent Password Tip**: When you register a new student, the system automatically creates a parent account and generates a temporary password. For your convenience during testing, this password is now displayed in the **Success Message** at the top of the registration page after you click submit. It is also sent via email.
+
 ---
 
 ## 🚀 Deployment Guide (Update your Repo)
