@@ -7,10 +7,7 @@ This project has been enhanced with enterprise-grade features including biometri
 Below is a detailed breakdown of the recent system-wide updates and their technical impact.
 - **Student Registration**: Encrypted sensitive fields (email, mobile stored as ciphertext + hash for uniqueness).
 ### 🛠️ Developer Tools
-I have included several utility scripts to help with development:
--   `tools/setup_demo.py`: Creates admin and parent test users.
--   `tools/register_test.py`: Fast verification of the student registration flow.
--   `tools/login_check.py`: Checks parent login stability.
+
 - **Automated Parent Linking**: Real-time creation of Parent accounts and relationship mapping during registration.
 - **Security**: Fernet encryption for data-at-rest; SHA-256 hashing for data-in-transit uniqueness checks.
 - **Parent Portal**: Personalized dashboard for viewing student status and engagement alerts.
