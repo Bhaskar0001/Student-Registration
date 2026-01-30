@@ -31,7 +31,7 @@ def _make_student_uid() -> str:
     return "STU" + str(ms)[-13:]
 
 
-@login_required
+# @login_required  <-- Removed to allow public registration
 def register(request):
     try:
         if request.method == "POST":
