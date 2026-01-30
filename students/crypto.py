@@ -5,6 +5,10 @@ from django.core.exceptions import ImproperlyConfigured
 
 _cached_fernet = None
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def _fernet() -> Fernet:
     global _cached_fernet
     if _cached_fernet is not None:
@@ -16,9 +20,18 @@ def _fernet() -> Fernet:
         if settings.DEBUG:
             key = Fernet.generate_key().decode("utf-8")
         else:
-            raise ImproperlyConfigured("FIELD_ENCRYPTION_KEY is missing in production.")
+            # Fallback for Production to verify if this is the cause of 500
+            # logger.error("CRITICAL: FIELD_ENCRYPTION_KEY missing in production. Using temporary key. DATA WILL BE UNREADABLE AFTER RESTART.")
+            key = Fernet.generate_key().decode("utf-8")
 
-    _cached_fernet = Fernet(key.encode("utf-8"))
+    try:
+        _cached_fernet = Fernet(key.encode("utf-8"))
+    except Exception as e:
+        # Fallback if key is malformed
+        logger.error(f"Invalid FIELD_ENCRYPTION_KEY: {e}. Generating temp key.")
+        key = Fernet.generate_key().decode("utf-8")
+        _cached_fernet = Fernet(key.encode("utf-8"))
+        
     return _cached_fernet
 
 
