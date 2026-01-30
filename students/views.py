@@ -33,126 +33,133 @@ def _make_student_uid() -> str:
 
 @login_required
 def register(request):
-    if request.method == "POST":
-        form = StudentRegistrationForm(request.POST)
-        if form.is_valid():
-            full_name = form.cleaned_data["full_name"].strip()
-            email = form.cleaned_data["email"].strip().lower()
-            mobile = form.cleaned_data["mobile"].strip()
-            class_grade = form.cleaned_data["class_grade"]
+    try:
+        if request.method == "POST":
+            form = StudentRegistrationForm(request.POST)
+            if form.is_valid():
+                full_name = form.cleaned_data["full_name"].strip()
+                email = form.cleaned_data["email"].strip().lower()
+                mobile = form.cleaned_data["mobile"].strip()
+                class_grade = form.cleaned_data["class_grade"]
 
-            s = Student(
-                student_uid=_make_student_uid(),
-                full_name=full_name,
-                class_grade=class_grade,
-            )
+                s = Student(
+                    student_uid=_make_student_uid(),
+                    full_name=full_name,
+                    class_grade=class_grade,
+                )
 
-            try:
-                with transaction.atomic():
-                    s.set_email(email)
-                    s.set_mobile(mobile)
-                    s.save()
-                    
-                    # Auto-create Parent User and link to Student
-                    parent_name = form.cleaned_data.get("parent_name", "").strip()
-                    parent_email_input = form.cleaned_data.get("parent_email", "").strip().lower()
-                    
-                    if parent_name and parent_email_input:
-                        from django.contrib.auth import get_user_model
-                        from parents.models import Parent, StudentParent
-                        import secrets
+                try:
+                    with transaction.atomic():
+                        s.set_email(email)
+                        s.set_mobile(mobile)
+                        s.save()
                         
-                        User = get_user_model()
+                        # Auto-create Parent User and link to Student
+                        parent_name = form.cleaned_data.get("parent_name", "").strip()
+                        parent_email_input = form.cleaned_data.get("parent_email", "").strip().lower()
                         
-                        # Check if parent user already exists
-                        parent_user = User.objects.filter(email=parent_email_input).first()
-                        
-                        if not parent_user:
-                            # Create a new user for parent with random password
-                            # Parent can reset password later
-                            temp_password = secrets.token_urlsafe(12)
-                            username = parent_email_input.split("@")[0] + "_" + str(s.id)
-                            parent_user = User.objects.create_user(
-                                username=username,
-                                email=parent_email_input,
-                                password=temp_password
+                        if parent_name and parent_email_input:
+                            from django.contrib.auth import get_user_model
+                            from parents.models import Parent, StudentParent
+                            import secrets
+                            
+                            User = get_user_model()
+                            
+                            # Check if parent user already exists
+                            parent_user = User.objects.filter(email=parent_email_input).first()
+                            
+                            if not parent_user:
+                                # Create a new user for parent with random password
+                                # Parent can reset password later
+                                temp_password = secrets.token_urlsafe(12)
+                                username = parent_email_input.split("@")[0] + "_" + str(s.id)
+                                parent_user = User.objects.create_user(
+                                    username=username,
+                                    email=parent_email_input,
+                                    password=temp_password
+                                )
+                                # Create Parent profile
+                                parent_profile = Parent.objects.create(
+                                    user=parent_user,
+                                    full_name=parent_name
+                                )
+                                password_info = f"\n\nYour temporary login password is: {temp_password}\nPlease change it after first login."
+                            else:
+                                # Parent user exists, get or create profile
+                                parent_profile, _ = Parent.objects.get_or_create(
+                                    user=parent_user,
+                                    defaults={"full_name": parent_name}
+                                )
+                                password_info = ""
+                            
+                            StudentParent.objects.get_or_create(
+                                student=s,
+                                parent=parent_profile,
+                                defaults={"relationship": "PARENT"}
                             )
-                            # Create Parent profile
-                            parent_profile = Parent.objects.create(
-                                user=parent_user,
-                                full_name=parent_name
-                            )
-                            password_info = f"\n\nYour temporary login password is: {temp_password}\nPlease change it after first login."
                         else:
-                            # Parent user exists, get or create profile
-                            parent_profile, _ = Parent.objects.get_or_create(
-                                user=parent_user,
-                                defaults={"full_name": parent_name}
-                            )
+                            parent_email_input = None
                             password_info = ""
-                        
-                        StudentParent.objects.get_or_create(
-                            student=s,
-                            parent=parent_profile,
-                            defaults={"relationship": "PARENT"}
-                        )
-                    else:
-                        parent_email_input = None
-                        password_info = ""
-                        
-            except IntegrityError:
-                messages.error(request, "This email or mobile is already registered.")
-                return render(request, "students/register.html", {"form": form})
-            except ValidationError as e:
-                messages.error(request, f"Validation error: {e}")
-                return render(request, "students/register.html", {"form": form})
-            except Exception as e:
-                logger.exception(f"Unexpected error during registration: {e}")
-                messages.error(request, f"Could not register student: {e}")
-                return render(request, "students/register.html", {"form": form})
+                            
+                except IntegrityError:
+                    messages.error(request, "This email or mobile is already registered.")
+                    return render(request, "students/register.html", {"form": form})
+                except ValidationError as e:
+                    messages.error(request, f"Validation error: {e}")
+                    return render(request, "students/register.html", {"form": form})
+                except Exception as e:
+                    import traceback
+                    logger.exception(f"Unexpected error during registration: {e}")
+                    # messages.error(request, f"Could not register student: {e}") 
+                    # Return error directly to see it!
+                    return HttpResponse(f"<h1>Error caught in inner block:</h1><pre>{traceback.format_exc()}</pre>", status=500)
 
-            # Send confirmation emails
-            # 1. Student Email
-            student_subject = "Registration Successful"
-            student_body = (
-                f"Hello {s.full_name},\n\n"
-                f"Your registration is successful.\n"
-                f"Registration ID: {s.student_uid}\n\n"
-                f"Thank you.\nSchool Administration"
-            )
-            student_email_sent = send_student_email(s.email, student_subject, student_body)
-            if not student_email_sent:
-                messages.warning(request, "Student registered, but student confirmation email failed.")
-
-            # 2. Parent Email (with login info if new)
-            if parent_email_input:
-                parent_subject = "Student Registration Confirmation"
-                parent_body = (
-                    f"Hello {parent_name},\n\n"
-                    f"Your child {s.full_name} has been registered successfully.\n"
+                # Send confirmation emails
+                # 1. Student Email
+                student_subject = "Registration Successful"
+                student_body = (
+                    f"Hello {s.full_name},\n\n"
+                    f"Your registration is successful.\n"
                     f"Registration ID: {s.student_uid}\n\n"
-                    f"You can now login to the Parent Portal using your email: {parent_email_input}"
-                    f" {password_info}\n\n"
                     f"Thank you.\nSchool Administration"
                 )
-                parent_email_sent = send_student_email(parent_email_input, parent_subject, parent_body)
-                if not parent_email_sent:
-                    messages.warning(request, "Student registered, but parent confirmation email failed.")
+                student_email_sent = send_student_email(s.email, student_subject, student_body)
+                if not student_email_sent:
+                    messages.warning(request, "Student registered, but student confirmation email failed.")
 
-            success_msg = f"Successfully registered {s.full_name} (ID: {s.student_uid})."
-            if password_info:
-                # Include the password in the message so the user can see it during testing
-                success_msg += f" A new parent portal account has been created for {parent_email_input}."
-                # Safe to show here as it's a one-time message for the registrant
-                success_msg += f" LOGIN PASSWORD: {temp_password}"
+                # 2. Parent Email (with login info if new)
+                if parent_email_input:
+                    parent_subject = "Student Registration Confirmation"
+                    parent_body = (
+                        f"Hello {parent_name},\n\n"
+                        f"Your child {s.full_name} has been registered successfully.\n"
+                        f"Registration ID: {s.student_uid}\n\n"
+                        f"You can now login to the Parent Portal using your email: {parent_email_input}"
+                        f" {password_info}\n\n"
+                        f"Thank you.\nSchool Administration"
+                    )
+                    parent_email_sent = send_student_email(parent_email_input, parent_subject, parent_body)
+                    if not parent_email_sent:
+                        messages.warning(request, "Student registered, but parent confirmation email failed.")
 
-            messages.success(request, success_msg)
-            return redirect("students:register")
+                success_msg = f"Successfully registered {s.full_name} (ID: {s.student_uid})."
+                if password_info:
+                    # Include the password in the message so the user can see it during testing
+                    success_msg += f" A new parent portal account has been created for {parent_email_input}."
+                    # Safe to show here as it's a one-time message for the registrant
+                    success_msg += f" LOGIN PASSWORD: {temp_password}"
 
-    else:
-        form = StudentRegistrationForm()
+                messages.success(request, success_msg)
+                return redirect("students:register")
 
-    return render(request, "students/register.html", {"form": form})
+        else:
+            form = StudentRegistrationForm()
+
+        return render(request, "students/register.html", {"form": form})
+    
+    except Exception as e:
+        import traceback
+        return HttpResponse(f"<h1>CRITICAL ERROR (Outer Block)</h1><pre>{traceback.format_exc()}</pre>", status=500)
 
 
 @login_required
