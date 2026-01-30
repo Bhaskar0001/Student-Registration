@@ -16,7 +16,7 @@ SECRET_KEY = os.getenv(
     "django-insecure-change-me"
 )
 
-DEBUG = os.getenv("DJANGO_DEBUG", "False").strip().lower() in ("1", "true", "yes", "on")
+DEBUG = True
 
 # Render sets this automatically (very important)
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
