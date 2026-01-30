@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load .env only locally
+# Load .env only locally
 if not os.getenv("RENDER"):
     load_dotenv(BASE_DIR / ".env")
 
@@ -16,7 +17,11 @@ SECRET_KEY = os.getenv(
     "django-insecure-change-me"
 )
 
-DEBUG = True
+# Use robust boolean check which handles "1", "true", "True", etc.
+def is_true(value):
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+DEBUG = is_true(os.getenv("DJANGO_DEBUG", "False"))
 
 # Render sets this automatically (very important)
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME", "")
@@ -89,7 +94,25 @@ WSGI_APPLICATION = "aah_guru.wsgi.application"
 DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").strip().lower()
 
 if DB_ENGINE == "mysql":
+    import base64
+    
     ca_path = os.path.join(BASE_DIR, "ca.pem")
+    
+    # Check if we need to create ca.pem from env var
+    aiven_cert = os.getenv("AIVEN_CA_CERT_B64")
+    if aiven_cert and not os.path.exists(ca_path):
+        try:
+            # Decode and write to file
+            # Handle potential header/footer if included in base64 string, though usually it's just the b64 body
+            # But the user sent a string starting with ----BEGIN CERTIFICATE----
+            # which means it might NOT be pure base64 of the DER. 
+            # Actually user input starts with "LS0t...", which is "---..." in base64.
+            # So we decode the base64 env var to get the PEM content.
+            with open(ca_path, "wb") as f:
+                f.write(base64.b64decode(aiven_cert))
+            print("Successfully created ca.pem from AIVEN_CA_CERT_B64")
+        except Exception as e:
+            print(f"Error creating ca.pem: {e}")
 
     options = {"charset": "utf8mb4"}
 
@@ -159,9 +182,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 # Email
 # ---------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST = os.getenv("EMAIL_HOST", os.getenv("SMTP_HOST", "smtp.gmail.com"))
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", os.getenv("SMTP_PORT", 587)))
+EMAIL_USE_TLS = is_true(os.getenv("EMAIL_USE_TLS", os.getenv("SMTP_USE_TLS", "True")))
 
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", os.getenv("SMTP_USER", ""))
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", os.getenv("SMTP_PASSWORD", ""))
