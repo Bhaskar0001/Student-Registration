@@ -45,5 +45,6 @@ If you see an **Internal Server Error** on Render, it is usually because of miss
 | `SMTP_USER` | `bhaskarjoshi900@gmail.com` |
 | `SMTP_PASSWORD` | (Your Gmail App Password) |
 | `DEFAULT_FROM_EMAIL` | `bhaskarjoshi900@gmail.com` |
+sendgridapi use in production
 
 ---
