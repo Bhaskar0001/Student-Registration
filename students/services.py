@@ -43,20 +43,6 @@ def register_student(full_name: str, email: str, mobile: str, class_grade: str) 
         mobile_hash=mobile_hash,
     )
 
-    # confirmation email (in dev this prints in terminal console)
-    send_mail(
-        subject="AAH GURU Registration Successful",
-        message=(
-            f"Hello {student.full_name},\n\n"
-            f"Your registration is successful.\n"
-            f"Registration ID: {student.student_uid}\n\n"
-            "Thank you,\nAAH GURU"
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email],
-        fail_silently=False,
-    )
-
     return student
 
 

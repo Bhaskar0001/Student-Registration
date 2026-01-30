@@ -111,34 +111,30 @@ def register(request):
 
             # Send confirmation emails
             # 1. Student Email
-            try:
-                student_subject = "Registration Successful"
-                student_body = (
-                    f"Hello {s.full_name},\n\n"
-                    f"Your registration is successful.\n"
-                    f"Registration ID: {s.student_uid}\n\n"
-                    f"Thank you.\nSchool Administration"
-                )
-                send_student_email(s.email, student_subject, student_body)
-            except Exception as e:
-                print(f"Student email error: {e}")
+            student_subject = "Registration Successful"
+            student_body = (
+                f"Hello {s.full_name},\n\n"
+                f"Your registration is successful.\n"
+                f"Registration ID: {s.student_uid}\n\n"
+                f"Thank you.\nSchool Administration"
+            )
+            student_email_sent = send_student_email(s.email, student_subject, student_body)
+            if not student_email_sent:
                 messages.warning(request, "Student registered, but student confirmation email failed.")
 
             # 2. Parent Email (with login info if new)
             if parent_email_input:
-                try:
-                    parent_subject = "Student Registration Confirmation"
-                    parent_body = (
-                        f"Hello {parent_name},\n\n"
-                        f"Your child {s.full_name} has been registered successfully.\n"
-                        f"Registration ID: {s.student_uid}\n\n"
-                        f"You can now login to the Parent Portal using your email: {parent_email_input}"
-                        f" {password_info}\n\n"
-                        f"Thank you.\nSchool Administration"
-                    )
-                    send_student_email(parent_email_input, parent_subject, parent_body)
-                except Exception as e:
-                    print(f"Parent email error: {e}")
+                parent_subject = "Student Registration Confirmation"
+                parent_body = (
+                    f"Hello {parent_name},\n\n"
+                    f"Your child {s.full_name} has been registered successfully.\n"
+                    f"Registration ID: {s.student_uid}\n\n"
+                    f"You can now login to the Parent Portal using your email: {parent_email_input}"
+                    f" {password_info}\n\n"
+                    f"Thank you.\nSchool Administration"
+                )
+                parent_email_sent = send_student_email(parent_email_input, parent_subject, parent_body)
+                if not parent_email_sent:
                     messages.warning(request, "Student registered, but parent confirmation email failed.")
 
             success_msg = f"Successfully registered {s.full_name} (ID: {s.student_uid})."

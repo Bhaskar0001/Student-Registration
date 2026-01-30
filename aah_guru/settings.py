@@ -158,22 +158,19 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 # ---------------------------
 # Email
 # ---------------------------
-# ---------------------------
-# Email
-# ---------------------------
-EMAIL_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("SMTP_PORT", "587"))
-EMAIL_USE_TLS = os.getenv("SMTP_USE_TLS", "1").strip().lower() in ("1", "true", "yes", "on")
-EMAIL_HOST_USER = os.getenv("SMTP_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "no-reply@aahguru.local")
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
-# Use SMTP if credentials exist, otherwise console
-if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_TIMEOUT = 10
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# SendGrid typically uses 'apikey' as the username, and the API Key as the password
+EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_PASSWORD = os.getenv("SENDGRID_API_KEY", os.getenv("SMTP_PASSWORD", ""))
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@sendgrid.net")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+EMAIL_TIMEOUT = 10
 
 
 # ---------------------------
